@@ -1,34 +1,63 @@
--- Fact Tables
-
-CREATE TABLE fact_gen(
-  date_id INT,
-  state_id VARCHAR(50),
-  fuel_id VARCHAR(50),
-  generation DECIMAL(10, 2),
-  FOREIGN KEY (date_id) REFRENCES dim_date(date_id),
-  FOREIGN KEY (state_id) REFRENCES dim_state(state_id),
-  FOREIGN KEY (fuel_id) REFRENCES dim_fuel(fuel_id)
-);
-
-
-CREATE TABLE fact_prices(
-
-);
-
-CREATE TABLE fact_fuel_prices(
-
-);
-
-
 -- Dimension Tables
 CREATE TABLE dim_date(
-
+  date_id INT PRIMARY KEY, -- Format: YYYYMM
+  year INT NOT NULL,
+  month INT NOT NULL,
+  month_name VARCHAR(20) NOT NULL,
+  quarter INT NOT NULL
 );
 
 CREATE TABLE dim_state(
-
+  state_id SERIAL PRIMARY KEY,
+  state_code VARCHAR(2) NOT NULL UNIQUE,
+  state_name VARCHAR(50) NOT NULL,
+  census_region VARCHAR(50)
 );
 
 CREATE TABLE dim_fuel(
+  fuel_id SERIAL PRIMARY KEY,
+  fuel_name VARCHAR(50) NOT NULL UNIQUE,
+  fuel_category VARCHAR(50)
+);
 
+CREATE TABLE dim_sector(
+  sector_id SERIAL PRIMARY KEY,
+  sector_name VARCHAR(50) NOT NULL
+);
+
+-- Fact Tables
+CREATE TABLE fact_gen(
+  gen_id SERIAL PRIMARY KEY,
+  date_id INT NOT NULL,
+  state_id INT NOT NULL,
+  fuel_id INT NOT NULL,
+  generation DECIMAL(12, 2),
+  FOREIGN KEY (date_id) REFERENCES dim_date(date_id),
+  FOREIGN KEY (state_id) REFERENCES dim_state(state_id),
+  FOREIGN KEY (fuel_id) REFERENCES dim_fuel(fuel_id),
+  UNIQUE(date_id, state_id, fuel_id)
+);
+
+CREATE TABLE fact_prices(
+  price_id SERIAL PRIMARY KEY,
+  date_id INT NOT NULL,
+  state_id INT NOT NULL,
+  sector_id INT NOT NULL,
+  price_per_kwh DECIMAL(10,4),
+  FOREIGN KEY (date_id) REFERENCES dim_date(date_id),
+  FOREIGN KEY (state_id) REFERENCES dim_state(state_id),
+  FOREIGN KEY (sector_id) REFERENCES dim_sector(sector_id),
+  UNIQUE (date_id, state_id, sector_id)
+);
+
+CREATE TABLE fact_fuel_prices(
+  fuel_price_id SERIAL PRIMARY KEY,
+  date_id INT NOT NULL,
+  state_id INT NOT NULL,
+  fuel_id INT NOT NULL,
+  price_per_mmbtu DECIMAL(10,4),
+  FOREIGN KEY (date_id) REFERENCES dim_date(date_id),
+  FOREIGN KEY (state_id) REFERENCES dim_state(state_id),
+  FOREIGN KEY (fuel_id) REFERENCES dim_fuel(fuel_id),
+  UNIQUE (date_id, state_id, fuel_id)
 );
