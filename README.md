@@ -20,5 +20,6 @@ Analysis of EIA Open Data
    - [Fuel API Route](https://www.eia.gov/opendata/browser/natural-gas/pri/sum)
    - fitler by "process-name": "Electric Power Pirce"
    - the state format is slightly different than the other tables and will need cleaning
+   - units is $/MCF so will need to convert to mmbtu if desired
 
 # STEP 2: Database Schema

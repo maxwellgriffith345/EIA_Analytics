@@ -32,3 +32,10 @@ https://www.datacamp.com/blog/star-schema-vs-snowflake-schema
   - create and load the dim table first
   - query the table to pull all of the ids and the name column into a dictornary
   - use that dictornary as a map on the fact data frame to load in the ids and then load the fact data frame into the database
+
+
+## Extracting the data
+- how to deal with the 5000 row limit when pulling a years worth of data?
+
+## Connecting Postgre with Python
+-library psycopg2
