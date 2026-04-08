@@ -1,109 +1,113 @@
 import requests
 import pandas as pd
 import os
-from config.py import EIA_KEY
+from config import EIA_KEY
 
-def make_request(req_name: str, route: str, params: dict) -> pd.DataFrame:
+def make_request(name: str, route: str, params: dict) -> pd.DataFrame:
 
     #should update the start and end date here for all requests
-    start_date = "2025-01"
+    start_date = "2024-01"
     end_date = "2025-01"
     params["start"] = start_date
     params["end"] = end_date
+    params["length"] = 5000
+    params["offset"] = 0
 
-    result = requests.get(route, params)
+    all_rows = []
 
-    #chec the request is good?
-    result.raise_for_status()
+    #infinite loop, will continue to loop unitl a break statement
+    while True:
+        response = requests.get(route, params = params)
+        response.raise_for_status()
+        data = response.json() #dict
 
-    #check if the rquest is over the row limit
+        #check for warnings ie row limit warning
+        #need to paganate using offset if we hit the row limit
+        if params["offset"] == 0:
+            warnings = data.get("warnings")
+            if warnings:
+                print(warnings[0].get('warning') + " for " + name)
 
-    #convert to json
-    result_data = result.json() #dict
+        #returns a list of all the data rows
+        #this way we can append new rows to the list
+        rows = data['response']['data']
+        total_rows = int(data['response']['total'])
 
-    #check for warnings
-    #add logic here to check if warnings is empty before pulling warning
-    #add request name here to the print statement
-    try:
-        warnings = result_data['warnings'][0]['warning']
-        print(warnings)
-    except:
-        print("no warnings")
-    #get the data
-    result_df = pd.DataFrame(result_data['response']['data'])
+        #if no rows returned excit loop
+        if not rows:
+            break
 
-    #any other clean up needed?
+        #use extend to add another list to a list
+        #append is for single elements
+        all_rows.extend(rows)
 
-    return result_df
+        #exit loop if we have all the rows
+        if len(all_rows) >= total_rows:
+            break
 
+        params["offset"] += 5000
+
+    #convert json list to df and return
+    return pd.DataFrame(all_rows)
 
 def get_gen_data() -> pd.DataFrame:
+    name = "generation"
     gen_url = "https://api.eia.gov/v2/electricity/electric-power-operational-data/data"
-
     gen_params = {
         "frequency": "monthly",
         "data[0]": "generation",
         "sort[0][column]": "period",
         "sort[0][direction]": "desc",
-        "offset": 0,
-        "length": 5000,
         "api_key": EIA_KEY
     }
 
-    gen_df = make_request(gen_url, gen_params)
-
-    #clean up the data here
+    gen_df = make_request(name, gen_url, gen_params)
 
     return gen_df
 
-
 def get_price_data()-> pd.DataFrame:
+    name = "price"
     price_url = "https://api.eia.gov/v2/electricity/retail-sales/data/"
-
     price_params = {
         "frequency": "monthly",
         "data[0]": "price",
         "sort[0][column]": "period",
         "sort[0][direction]": "desc",
-        "offset": 0,
-        "length": 5000,
         "api_key": EIA_KEY
     }
 
-    price_df = make_request(price_url, price_params)
+    price_df = make_request(name, price_url, price_params)
 
     return price_df
 
 def get_fuel_data() -> pd.DataFrame:
+    name = "fuel"
     fuel_url = "https://api.eia.gov/v2/natural-gas/pri/sum/data/"
-
     fuel_params = {
         "frequency": "monthly",
         "data[0]": "value",
         "facets[process][]": "PEU",
         "sort[0][column]": "period",
         "sort[0][direction]": "desc",
-        "offset": 0,
-        "length": 5000,
         "api_key": EIA_KEY
     }
 
-    fuel_df = make_request(fuel_url, fuel_params)
+    fuel_df = make_request(name, fuel_url, fuel_params)
     return fuel_df
-
 
 def dump_to_csv():
     #Code to dump dataframes to csv
     data_path = "data/"
+    os.makedirs(data_path, exist_ok = True)
 
     gen = get_gen_data()
     price = get_price_data()
     fuel = get_fuel_data()
 
     #safer way to do paths?
-    gen.to_csv(data_path + "gen_data.csv", index=False)
-    price.to_csv(data_path + "price_data.csv", index=False)
-    fuel.to_csv(data_path + "fuel_data.csv", index=False)
+    gen.to_csv(os.path.join(data_path, "gen_data.csv"), index=False)
+    price.to_csv(os.path.join(data_path,"price_data.csv"), index=False)
+    fuel.to_csv(os.path.join(data_path,"fuel_data.csv"), index=False)
 
 
 if __name__ == '__main__':
