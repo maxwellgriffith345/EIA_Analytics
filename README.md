@@ -22,4 +22,8 @@ Analysis of EIA Open Data
    - the state format is slightly different than the other tables and will need cleaning
    - units is $/MCF so will need to convert to mmbtu if desired
 
+challenges: the API only returns 5000 rows per call, when pulling data for multiple years that limit get's hit. Solve was to pagenate the calls and use the offset to return all the rows.
+
+challenges: when using high levels of offsett ie 2000 the API can error out so I needed to add retry functionality
+
 # STEP 2: Database Schema
