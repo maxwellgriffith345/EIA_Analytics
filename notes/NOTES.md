@@ -33,6 +33,14 @@ https://www.datacamp.com/blog/star-schema-vs-snowflake-schema
   - query the table to pull all of the ids and the name column into a dictornary
   - use that dictornary as a map on the fact data frame to load in the ids and then load the fact data frame into the database
 
+-Docker stuff
+  - differnce between dockerfile and compose file?
+  - should I link the init schema to a volume or use a dockerfile to copy it?
+  - how to create a volume for the db?
+  - the advantage of docker compose is you can spin up and down multipe contrainers for your entire project
+  - https://docs.docker.com/guides/pre-seeding/
+  - list tables in database: psql \dt
+
 
 ## Extracting the data
 - how to deal with the 5000 row limit when pulling a years worth of data?
