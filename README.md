@@ -26,4 +26,9 @@ challenges: the API only returns 5000 rows per call, when pulling data for multi
 
 challenges: when using high levels of offsett ie 2000 the API can error out so I needed to add retry functionality
 
-# STEP 2: Database Schema
+# STEP 2: Setup data base
+
+challenge: what order to load and insert the data into
+pull the raw data, set up the dim tables to get the IDs for the foreign keys, then get a maybe of those ids and the dim values to use to insert the id's int he fact tables, pull in the data for the fact tables, transform the values and map the dim ids
+
+challnege: dealing with the state date, normalizng state names and abreviations across the fact tables, finding which regions/states are included in all tables, price didn't include Puerto Rico, some tables have "Pacific Region" while others have "Pacific and Pacific Continguous and Pacific Noncontiguous"

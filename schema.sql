@@ -9,9 +9,8 @@ CREATE TABLE dim_date(
 
 CREATE TABLE dim_state(
   state_id SERIAL PRIMARY KEY,
-  state_code VARCHAR(2) NOT NULL UNIQUE,
-  state_name VARCHAR(50) NOT NULL,
-  census_region VARCHAR(50)
+  state_short VARCHAR(2) NOT NULL UNIQUE,
+  state_long VARCHAR(50) NOT NULL,
 );
 
 CREATE TABLE dim_fuel(
