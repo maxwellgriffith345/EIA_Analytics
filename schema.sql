@@ -15,8 +15,8 @@ CREATE TABLE dim_state(
 
 CREATE TABLE dim_fuel(
   fuel_id SERIAL PRIMARY KEY,
-  fuel_name VARCHAR(50) NOT NULL UNIQUE,
-  fuel_category VARCHAR(50)
+  fuel_short VARCHAR(50) NOT NULL UNIQUE,
+  fuel_long VARCHAR(50)
 );
 
 CREATE TABLE dim_sector(
