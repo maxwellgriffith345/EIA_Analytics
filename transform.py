@@ -3,7 +3,7 @@ import os
 
 def getStateMap_ShortToLong(df: pd.DataFrame) -> dict:
     #should verify that column stateDescription is there
-    map = pd.Series(df.stateDescription.values, index=price_df.stateid).to_dict()
+    map = pd.Series(df.stateDescription.values, index=df.stateid).to_dict()
     return map
 
 def getStateMap_LongToShort(df: pd.DataFrame) -> dict:
@@ -79,7 +79,7 @@ def transform_fuel(df: pd.DataFrame, stateMap: dict, idMap={}, CSV = False) -> p
 
         # rename
         df = df.rename(columns = {"value": "price"})
-        
+
     else:
         # map: state_id, fuel_id
         df["state_id"]=df.stateShort.map(idMap["statemap"])

@@ -45,5 +45,17 @@ https://www.datacamp.com/blog/star-schema-vs-snowflake-schema
 ## Extracting the data
 - how to deal with the 5000 row limit when pulling a years worth of data?
 
-## Connecting Postgre with Python
+## Connecting Postgre with Python (SQLAlchemy)
 -library psycopg2
+- QUESTION: connect via a local unix socket vs connect over the network
+  - need to connect over the network when working with a docker container
+  - local socker connection vs TCP connection
+  - QUESTION: what is a TCP connection
+- https://docs.sqlalchemy.org/en/21/core/connections.html#sqlalchemy.engine.CursorResult
+- https://docs.sqlalchemy.org/en/21/core/connections.html#basic-usage
+- https://docs.sqlalchemy.org/en/21/tutorial/data.html#tutorial-working-with-data
+- the engine creates the connection to the database, connection factory
+    - do not create per object or per functino call, once is enough
+- the connection (created by the enigee) calls SQL statements
+    - should be used in a with statement to manage context
+- How do I write the dim functions and use them in another file without the eniginee or connection? or do I pass them the connection? maybe I write it as a class?
