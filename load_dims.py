@@ -1,4 +1,4 @@
-import pandas
+import pandas as pd
 import os
 import psycopg2
 from sqlalchemy import create_engine, text
@@ -15,11 +15,12 @@ def get_engine():
     try:
         with engine.connect() as conn:
             result = conn.execute(text("SELECT 1"))
-            print("Connection successful:", result.fetchone())
+        print("Connection successful:", result.fetchone())
+        return engine
     except OperationalError:
         print("connection failed")
+        return None
 
-    return engine
 
 #Price states
 def get_states(df):
@@ -56,36 +57,59 @@ def get_dates(df):
     date_df["quarter"]    = date_df["date"].dt.quarter
 
 
-    return dates_df["date_id", "year", "month", "month_name", "quarter"]
+    return date_df[["date_id", "year", "month", "month_name", "quarter"]]
 
-def load_table(tableName, engine, df):
+def load_table(engine, tableName, df):
     with engine.connect() as conn:
         df.to_sql(name=tableName, con=conn, if_exists='append', index=False)
         conn.commit()
-    print("Loaded", len(df), f"rows into {tableName}")
+        print("Loaded", len(df), f"rows into {tableName}")
 
-def get_states_map():
-    #state_short, stateid
+def get_map(engine, key_col: str, val_col: str, tablename: str):
+    query = f"SELECT {key_col}, {val_col} FROM {tablename}"
     with engine.connect() as conn:
-        result = conn.execute(text("SELECT state_short, state_id FROM dim_state")).fetchall()
-    state_map = dict(result)
-    return state_map
+        result = conn.execute(text(query)).fetchall()
+    result_map = dict(result)
+    return result_map
 
-def get_sector_map():
-
-def get_fuels_map():
-
-#def get_dates_map():
 
 # returns a dictonary of the maps state_id, fuel_id, sector_id
-def get_all_maps():
+def get_all_maps(engine):
+    all_maps = {
+        "state": get_map(engine, "state_short", "state_id", "dim_state" ),
+        "fuel": get_map(engine, "fuel_short", "fuel_id", "dim_fuel"),
+        "sector": get_map(engine, "sector_name", "sector_id", "dim_sector")
+    }
+
+    return all_maps
 
 if __name__ == '__main__':
+
     dataIn_path = "data/raw"
+
+    engine = get_engine()
+
+    #check if the engine connected
+    if engine is None:
+        raise SystemExist("couldn't connect to database")
+
     price_df = pd.read_csv(os.path.join(dataIn_path, "price_data.csv"))
     gen_df = pd.read_csv(os.path.join(dataIn_path, "gen_data.csv"))
 
+    #cleaner way to write this?
     state_df = get_states(price_df)
     sector_df = get_sectors(price_df)
-    fuels_df = get_fuels(gen_df)
-    dates_df = get_dates(price_df)
+    fuel_df = get_fuels(gen_df)
+    date_df = get_dates(price_df)
+
+    #load states
+    load_table(engine, "dim_state", state_df)
+    #load sectors
+    load_table(engine, "dim_sector", sector_df)
+    #load fuels
+    load_table(engine, "dim_fuel", fuel_df)
+    #load dates
+    load_table(engine, "dim_date", date_df)
+
+    maps = get_all_maps(engine)
+    print("Dimension maps ready:", {k: f"{len(v)} entries" for k, v in maps.items()})
