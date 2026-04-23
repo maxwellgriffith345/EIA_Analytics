@@ -91,7 +91,7 @@ if __name__ == '__main__':
 
     #check if the engine connected
     if engine is None:
-        raise SystemExist("couldn't connect to database")
+        raise SystemExit("couldn't connect to database")
 
     price_df = pd.read_csv(os.path.join(dataIn_path, "price_data.csv"))
     gen_df = pd.read_csv(os.path.join(dataIn_path, "gen_data.csv"))
