@@ -7,7 +7,6 @@ CREATE TABLE dim_date(
   quarter INT NOT NULL
 );
 
-DROP TABLE IF EXISTS dim_state;
 CREATE TABLE dim_state(
   state_id SERIAL PRIMARY KEY,
   state_short VARCHAR(5) NOT NULL UNIQUE,

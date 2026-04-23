@@ -40,7 +40,10 @@ https://www.datacamp.com/blog/star-schema-vs-snowflake-schema
   - the advantage of docker compose is you can spin up and down multipe contrainers for your entire project
   - https://docs.docker.com/guides/pre-seeding/
   - list tables in database: psql \dt
-
+  - remove contrain and volumes with a compose file
+    - docker compose down --volumes
+  - create the container and volume and image with a compose file
+    - docker compose up -d --build
 
 ## Extracting the data
 - how to deal with the 5000 row limit when pulling a years worth of data?
