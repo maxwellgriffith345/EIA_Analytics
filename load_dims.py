@@ -61,7 +61,7 @@ def get_dates(df):
 
 def load_table(engine, tableName, df):
     with engine.connect() as conn:
-        df.to_sql(name=tableName, con=conn, if_exists='append', index=False)
+        df.to_sql(name=tableName, con=conn, if_exists='delete_rows', index=False)
         conn.commit()
         print("Loaded", len(df), f"rows into {tableName}")
 

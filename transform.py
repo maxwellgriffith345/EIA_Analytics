@@ -17,6 +17,8 @@ def transform_gen(df: pd.DataFrame, stateMap: dict, idMap={}, CSV = False) -> pd
     df = df.copy()
     #Drop Pacific and Puerto Rico states they only show in gen data
     df = df[df.stateDescription.isin(["Pacific", "Puerto Rico"]) == False]
+    df = df[df.fuelTypeDescription.isin(["biomass"]) == False]
+
     df["stateShort"] = df.stateDescription.map(stateMap) #long to short map
     df["date_id"] = df.period.str.replace("-", "").astype(int)
 
@@ -52,7 +54,7 @@ def transform_prices(df: pd.DataFrame, idMap={}, CSV = False) -> pd.DataFrame:
         })
     else:
         df["state_id"] = df.stateid.map(idMap["state"])
-        df["sector_id"] = df.sectorid.map(idMap["sector"])
+        df["sector_id"] = df.sectorName.map(idMap["sector"])
         df = df[["date_id", "state_id", "sector_id", "price"]]
         df = df.rename(columns = {"price": "price_per_kwh"})
 
