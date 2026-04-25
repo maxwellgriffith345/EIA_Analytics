@@ -1,7 +1,7 @@
 import pandas as pd
 from extract import get_gen_data, get_price_data, get_fuel_data
 from load_dims import get_engine, load_table, get_all_maps
-from load_dims import get_states, get_sectors, get_fuels, get_dates
+from load_dims import get_states, get_price_sectors,get_gen_sectors, get_fuels, get_dates
 from transform import get_state_map_long_to_short, get_state_map_short_to_long
 from transform import transform_gen, transform_prices, transform_fuel
 
@@ -23,12 +23,14 @@ def run_pipeline():
     #-- Load dim tables ---
     print("\nloading dimension tables")
     state_df = get_states(price_raw)
-    sector_df = get_sectors(price_raw)
+    price_sector_df = get_price_sectors(price_raw)
+    gen_sector_df = get_gen_sectors(gen_raw)
     fuel_df = get_fuels(gen_raw)
     date_df = get_dates(price_raw)
 
     load_table(engine, "dim_state", state_df)
-    load_table(engine, "dim_sector", sector_df)
+    load_table(engine, "dim_pricesector", price_sector_df)
+    load_table(engine, "dim_gensector", gen_sector_df)
     load_table(engine, "dim_fuel", fuel_df)
     load_table(engine, "dim_date", date_df)
 
@@ -49,6 +51,7 @@ def run_pipeline():
     issues = []
     if gen_clean["state_id"].isna().any():   issues.append("gen: missing state_id")
     if gen_clean["fuel_id"].isna().any():    issues.append("gen: missing fuel_id")
+    if gen_clean["sector_id"].isna().any():  issues.append("gen: missing sector_id")
     if price_clean["state_id"].isna().any(): issues.append("prices: missing state_id")
     if price_clean["sector_id"].isna().any():issues.append("prices: missing sector_id")
     if fuel_clean["state_id"].isna().any():  issues.append("fuel: missing state_id")
@@ -73,6 +76,6 @@ def run_pipeline():
 
     print("Pipeline finished")
 
-    
+
 if __name__ == '__main__':
     run_pipeline()

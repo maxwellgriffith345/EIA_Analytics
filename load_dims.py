@@ -31,8 +31,13 @@ def get_states(df):
     return state_df
 
 #Price sectors
-def get_sectors(df):
+def get_price_sectors(df):
     sector_series = df.sectorName.drop_duplicates()
+    sector_df = sector_series.to_frame(name = "sector_name")
+    return sector_df
+
+def get_gen_sectors(df):
+    sector_series = df.sectorDescription.drop_duplicates()
     sector_df = sector_series.to_frame(name = "sector_name")
     return sector_df
 
@@ -78,7 +83,8 @@ def get_all_maps(engine):
     all_maps = {
         "state": get_map(engine, "state_short", "state_id", "dim_state" ),
         "fuel": get_map(engine, "fuel_short", "fuel_id", "dim_fuel"),
-        "sector": get_map(engine, "sector_name", "sector_id", "dim_sector")
+        "price_sector": get_map(engine, "sector_name", "sector_id", "dim_pricesector"),
+        "gen_sector": get_map(engine, "sector_name", "sector_id", "dim_gensector")
     }
 
     return all_maps
@@ -98,17 +104,16 @@ if __name__ == '__main__':
 
     #cleaner way to write this?
     state_df = get_states(price_df)
-    sector_df = get_sectors(price_df)
+    price_sector_df = get_price_sectors(price_df)
+    gen_sector_df = get_gen_sectors(gen_df)
     fuel_df = get_fuels(gen_df)
     date_df = get_dates(price_df)
 
-    #load states
+    #load tables
     load_table(engine, "dim_state", state_df)
-    #load sectors
-    load_table(engine, "dim_sector", sector_df)
-    #load fuels
+    load_table(engine, "dim_pricesector", price_sector_df)
+    load_table(engine, "dim_gensector", gen_sector_df)
     load_table(engine, "dim_fuel", fuel_df)
-    #load dates
     load_table(engine, "dim_date", date_df)
 
     maps = get_all_maps(engine)

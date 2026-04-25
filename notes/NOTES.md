@@ -62,3 +62,9 @@ https://www.datacamp.com/blog/star-schema-vs-snowflake-schema
 - the connection (created by the enigee) calls SQL statements
     - should be used in a with statement to manage context
 - How do I write the dim functions and use them in another file without the eniginee or connection? or do I pass them the connection? maybe I write it as a class?
+
+
+## TODO
+- duplicates in the generation data are due to the sectors
+- sector name "All Sectors" and "All Industrial" etc overlap  with Electrict Utility, Industrail....need to figure this out
+- OR include generation sector in the database which might be the easiest move

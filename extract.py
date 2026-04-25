@@ -69,13 +69,14 @@ def make_request(name: str, route: str, params: dict) -> pd.DataFrame:
 
     #convert json list to df and return
     return pd.DataFrame(all_rows)
-
+# https://www.eia.gov/opendata/browser/electricity/electric-power-operational-data?frequency=monthly&data=generation;&facets=sectorid;&sectorid=1;2;3;4;5;6;7;8;&start=2025-01&end=2025-02&sortColumn=period;&sortDirection=desc;
 def get_gen_data() -> pd.DataFrame:
     name = "generation"
     gen_url = "https://api.eia.gov/v2/electricity/electric-power-operational-data/data"
     gen_params = {
         "frequency": "monthly",
         "data[0]": "generation",
+        "facets[sectorid][]": [1,2,3,4,5,6,7,8],
         "sort[0][column]": "period",
         "sort[0][direction]": "desc",
         "api_key": EIA_KEY
@@ -117,7 +118,7 @@ def get_fuel_data() -> pd.DataFrame:
 
 def dump_to_csv():
     #Code to dump dataframes to csv
-    data_path = "data/"
+    data_path = "data/raw/"
     os.makedirs(data_path, exist_ok = True)
 
     gen = get_gen_data()

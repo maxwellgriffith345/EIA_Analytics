@@ -19,7 +19,13 @@ CREATE TABLE dim_fuel(
   fuel_long VARCHAR(50)
 );
 
-CREATE TABLE dim_sector(
+-- Price sector, customer sector
+CREATE TABLE dim_pricesector(
+  sector_id SERIAL PRIMARY KEY,
+  sector_name VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE dim_gensector(
   sector_id SERIAL PRIMARY KEY,
   sector_name VARCHAR(50) NOT NULL
 );
@@ -29,12 +35,14 @@ CREATE TABLE fact_gen(
   gen_id SERIAL PRIMARY KEY,
   date_id INT NOT NULL,
   state_id INT NOT NULL,
+  sector_id INT NOT NULL,
   fuel_id INT NOT NULL,
   generation DECIMAL(12, 2),
   FOREIGN KEY (date_id) REFERENCES dim_date(date_id),
   FOREIGN KEY (state_id) REFERENCES dim_state(state_id),
   FOREIGN KEY (fuel_id) REFERENCES dim_fuel(fuel_id),
-  UNIQUE(date_id, state_id, fuel_id)
+  FOREIGN KEY (sector_id) REFERENCES dim_gensector(sector_id),
+  UNIQUE(date_id, state_id, fuel_id, sector_id)
 );
 
 CREATE TABLE fact_prices(
@@ -45,7 +53,7 @@ CREATE TABLE fact_prices(
   price_per_kwh DECIMAL(10,4),
   FOREIGN KEY (date_id) REFERENCES dim_date(date_id),
   FOREIGN KEY (state_id) REFERENCES dim_state(state_id),
-  FOREIGN KEY (sector_id) REFERENCES dim_sector(sector_id),
+  FOREIGN KEY (sector_id) REFERENCES dim_pricesector(sector_id),
   UNIQUE (date_id, state_id, sector_id)
 );
 

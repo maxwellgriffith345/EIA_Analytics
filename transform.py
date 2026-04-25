@@ -23,7 +23,7 @@ def transform_gen(df: pd.DataFrame, stateMap: dict, idMap={}, CSV = False) -> pd
     df["date_id"] = df.period.str.replace("-", "").astype(int)
 
     if CSV:
-        df = df[["period", "date_id", "stateShort", "stateDescription",
+        df = df[["period", "date_id", "stateShort", "stateDescription", "sectorDescription",
                     "fueltypeid", "fuelTypeDescription", "generation"]]
 
         df = df.rename(columns={
@@ -34,7 +34,8 @@ def transform_gen(df: pd.DataFrame, stateMap: dict, idMap={}, CSV = False) -> pd
     else:
         df["state_id"]=df.stateShort.map(idMap["state"])
         df["fuel_id"]=df.fueltypeid.map(idMap["fuel"])
-        df = df[["date_id", "state_id", "fuel_id", "generation"]]
+        df["sector_id"]= df.sectorDescription.map(idMap["gen_sector"])
+        df = df[["date_id", "state_id", "sector_id", "fuel_id", "generation"]]
 
     return df
 
@@ -54,7 +55,7 @@ def transform_prices(df: pd.DataFrame, idMap={}, CSV = False) -> pd.DataFrame:
         })
     else:
         df["state_id"] = df.stateid.map(idMap["state"])
-        df["sector_id"] = df.sectorName.map(idMap["sector"])
+        df["sector_id"] = df.sectorName.map(idMap["price_sector"])
         df = df[["date_id", "state_id", "sector_id", "price"]]
         df = df.rename(columns = {"price": "price_per_kwh"})
 
