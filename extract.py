@@ -64,7 +64,7 @@ def make_request(name: str, route: str, params: dict) -> pd.DataFrame:
             year_rows.extend(rows)
             print(f"  {name} {year}: fetched {len(year_rows)} / {total} rows")
             #exit loop if we have all the rows
-            if len(year_rows) >= total_rows:
+            if len(year_rows) >= total:
                 break
 
             #small delay between successful returns
