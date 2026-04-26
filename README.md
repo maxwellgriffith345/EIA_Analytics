@@ -26,6 +26,8 @@ challenges: the API only returns 5000 rows per call, when pulling data for multi
 
 challenges: when using high levels of offsett ie 2000 the API can error out so I needed to add retry functionality
 
+need to chunk the request by years and paganate witt the offset to avoid API request errors
+
 # STEP 2: Setup data base
 
 challenge: what order to load and insert the data into
