@@ -68,3 +68,11 @@ https://www.datacamp.com/blog/star-schema-vs-snowflake-schema
 - duplicates in the generation data are due to the sectors
 - sector name "All Sectors" and "All Industrial" etc overlap  with Electrict Utility, Industrail....need to figure this out
 - OR include generation sector in the database which might be the easiest move
+
+
+## Limit the Gen pull
+- Limiting only by sector is 85,571 rows per year
+- Drop state: "Pacific", "Puerto Rico"
+- Drop "Regions"
+- 66,483 rows per year
+- Fuels?

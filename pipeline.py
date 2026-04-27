@@ -16,9 +16,10 @@ def run_pipeline():
 
     #-- API requests ---
     print("\npulling data from EIA API")
+    gen_raw = get_gen_data()
     fuel_raw = get_fuel_data()
     price_raw = get_price_data()
-    gen_raw = get_gen_data()
+
 
     #-- Load dim tables ---
     print("\nloading dimension tables")

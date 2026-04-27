@@ -4,93 +4,88 @@ import os
 import time
 from config import EIA_KEY
 
+STATES = [
+    "AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN",
+    "IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH",
+    "NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT",
+    "VT","VA","WA","WV","WI","WY"
+]
+
 def make_request(name: str, route: str, params: dict) -> pd.DataFrame:
 
-    years = range(2020,2025)
+    years = range(2020, 2025)  # 2020 through 2024
     all_dfs = []
 
-    #should update the start and end date here for all requests
     for year in years:
-        params["start"] = f"{year}-01"
-        params["end"] = f"{year}-12"
-        params["length"] = 5000
+        params["start"]  = f"{year}-01"
+        params["end"]    = f"{year}-12"
         params["offset"] = 0
-
+        params["length"] = 5000
         year_rows = []
 
-        print(f"pull {name} {year} ...")
-        #infinite loop, will continue to loop unitl a break statement
-        while True:
+        print(f"  {name} {year}: starting...")
 
-            #give it three trys to get a good response
+        while True:
             for attempt in range(3):
                 try:
-                    response = requests.get(route, params = params)
+                    response = requests.get(route, params=params)
                     response.raise_for_status()
-                    break #when the request is successful
-                except requests.exceptions.HTTPError as error: #catch an API error
-                    #502 bad gateway
-                    #503 Service Unavailable
-                    #504 Gateway Timeout
-                    if response.status_code in (502,503,504):
+                    break
+                except requests.exceptions.HTTPError as e:
+                    if response.status_code in (500, 502, 503, 504):
                         wait = 2 ** attempt
+                        print(f"    Server error attempt {attempt + 1}, retrying in {wait}s...")
                         time.sleep(wait)
                     else:
-                        raise #other erros we don't want to retry
-            else: #through an error if it loops three times without breaking
-                raise Exception("Failed after three attempts "+name, )
+                        raise
+            else:
+                raise Exception(f"Failed after 3 attempts — {name} {year} offset {params['offset']}")
 
-            data = response.json() #dict
-            rows = data['response']['data']
-            total = int(data['response']['total'])
-            #check for warnings ie row limit warning
-            #need to paganate using offset if we hit the row limit
-            """
-            if params["offset"] == 0:
-                warnings = data.get("warnings")
-                if warnings:
-                    print(warnings[0].get('warning') + " for " + name)
-            """
-            #returns a list of all the data rows
-            #this way we can append new rows to the list
+            data = response.json()
+            rows = data["response"]["data"]
+            total = int(data["response"]["total"])
 
-
-            #if no rows returned excit loop
             if not rows:
                 break
 
-            #use extend to add another list to a list
-            #append is for single elements
             year_rows.extend(rows)
             print(f"  {name} {year}: fetched {len(year_rows)} / {total} rows")
-            #exit loop if we have all the rows
+
             if len(year_rows) >= total:
                 break
 
-            #small delay between successful returns
             params["offset"] += 5000
             time.sleep(0.5)
 
         all_dfs.append(pd.DataFrame(year_rows))
-        print(f" {name} {year}: complete")
-    #convert json list to df and return
-    return pd.DataFrame(all_rows)
+        print(f"  {name} {year}: complete")
+
+    return pd.concat(all_dfs, ignore_index=True)
 # https://www.eia.gov/opendata/browser/electricity/electric-power-operational-data?frequency=monthly&data=generation;&facets=sectorid;&sectorid=1;2;3;4;5;6;7;8;&start=2025-01&end=2025-02&sortColumn=period;&sortDirection=desc;
 def get_gen_data() -> pd.DataFrame:
     name = "generation"
     gen_url = "https://api.eia.gov/v2/electricity/electric-power-operational-data/data"
-    gen_params = {
-        "frequency": "monthly",
-        "data[0]": "generation",
-        "facets[sectorid][]": [1,2,3,4,5,6,7,8],
-        "sort[0][column]": "period",
-        "sort[0][direction]": "desc",
-        "api_key": EIA_KEY
-    }
 
-    gen_df = make_request(name, gen_url, gen_params)
+    all_dfs = []
 
-    return gen_df
+    for state in STATES:
+        print(f" pulling {name} for {state}...")
+        gen_params = {
+            "frequency": "monthly",
+            "data[0]": "generation",
+            "facets[location][]": [state],
+            "facets[sectorid][]": [1,2,3,4,5,6,7,8],
+            "sort[0][column]": "period",
+            "sort[0][direction]": "desc",
+            "api_key": EIA_KEY
+        }
+
+        state_df = make_request(name, gen_url, gen_params)
+        if not state_df.empty:
+            all_dfs.append(state_df)
+        time.sleep(0.5)
+
+    return pd.concat(all_dfs, ignore_index = True)
 
 def get_price_data()-> pd.DataFrame:
     name = "price"
