@@ -1,6 +1,9 @@
 # EIA_Analytics
 Analysis of EIA Open Data
 
+## My Setup
+-DBeaver for sql exploration
+
 
 # STEP 1: Extract Data Using EIA API
 - Generation and prices by state and fuel
