@@ -39,15 +39,21 @@ order by gst.state_short;
 
 
 -- Query 9 TODO — Month with peak electricity prices per state
-
 -- CTE average price by state and month
-select 
+with cte_state_month as(
+	SELECT ds.state_short as state, fp.date_id as date, ROUND(AVG(fp.price_per_kwh),2) as avg_price
+	FROM fact_prices fp
+	JOIN dim_state ds ON fp.state_id = ds.state_id
+	GROUP BY ds.state_short, fp.date_id
+),
+cte_max_price as (
+	select csm.state, MAX(csm.avg_price) as max_price
+	from cte_state_month csm
+	group by csm.state
+)
 
-
-SELECT ds.state_short, fp.date_id, ROUND(AVG(fp.price_per_kwh),2) as avg_price
-FROM fact_prices fp
-JOIN dim_state ds ON fp.state_id = ds.state_id
-GROUP BY ds.state_short, fp.date_id
-ORDER BY ds.state_short DESC
-
-
+select csm.state, csm.date, cmp.max_price
+from cte_state_month csm
+join cte_max_price cmp
+on csm.state = cmp.state and csm.avg_price = cmp.max_price
+order by csm.state
