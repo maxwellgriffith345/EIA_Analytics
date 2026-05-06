@@ -38,7 +38,7 @@ join cte_total_gen_state gs on gst.state_short = gs.state_short
 order by gst.state_short;
 
 
--- Query 9 TODO — Month with peak electricity prices per state
+-- Query 9 Month with peak electricity prices per state
 -- CTE average price by state and month
 with cte_state_month as(
 	SELECT ds.state_short as state, fp.date_id as date, ROUND(AVG(fp.price_per_kwh),2) as avg_price
@@ -57,3 +57,21 @@ from cte_state_month csm
 join cte_max_price cmp
 on csm.state = cmp.state and csm.avg_price = cmp.max_price
 order by csm.state
+
+-- Query 10 compare average gas price to electricty price per state
+with cte_avg_price as (
+  	SELECT ds.state_short as state, ROUND(AVG(fp.price_per_kwh), 2) as avg_price
+    FROM fact_prices fp
+    JOIN dim_state ds ON fp.state_id = ds.state_id
+    GROUP BY ds.state_short
+),
+cte_avg_gas as ( 
+	select ds.state_short as state, ROUND(AVG(ffp.price_per_mmbtu),2) as avg_fuel_price
+	from fact_fuel_prices ffp
+	join dim_state ds on ffp.state_id = ds.state_id
+	group by ds.state_short
+)
+
+select ap.state, ap.avg_price, agp.avg_fuel_price
+from cte_avg_price ap 
+join cte_avg_gas agp on ap.state = agp.state
