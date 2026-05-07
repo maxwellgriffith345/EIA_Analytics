@@ -70,7 +70,7 @@ All data sourced from the [EIA Open Data API](https://www.eia.gov/opendata/). A 
 | Retail electricity prices by state | `/electricity/retail-sales` | period, stateid, sectorid, price |
 | Natural gas prices | `/natural-gas/pri/sum` | period, duoarea, value |
 
-**Date range:** January 2020 — December 2024  
+**Date range:** January 2020 — December 2024
 **Frequency:** Monthly
 
 ---
@@ -204,6 +204,7 @@ The generation dataset includes both granular sectors (e.g. "IPP Non-CHP", "Comm
 | Docker + Docker Compose | Database containerisation and schema initialisation |
 | DBeaver | SQL query development |
 | Jupyter | Analysis presentation |
+|Claude   | AI assistance [Full Claude Project Chat](https://claude.ai/share/9b6c7f3c-0f8f-4935-a284-e4662fa0312a)   |
 
 ---
 
