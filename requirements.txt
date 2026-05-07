@@ -1,0 +1,16 @@
+# EIA Analytics - Python Dependencies
+
+# API and HTTP
+requests>=2.31.0
+
+# Data processing
+pandas>=2.0.0
+
+# Database
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.0
+
+# Jupyter
+jupyter>=1.0.0
+notebook>=7.0.0
+ipykernel>=6.0.0
