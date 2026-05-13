@@ -6,13 +6,7 @@ An end-to-end data pipeline and analysis project using the EIA Open Data API, Py
 
 ## Project Overview
 
-This project pulls monthly U.S. electricity data from the U.S. Energy Information Administration (EIA) Open Data API, loads it into a PostgreSQL data warehouse, and analyzes it using SQL. The analysis covers electricity generation by state and fuel type, retail electricity prices by state and customer sector, and natural gas prices — spanning 2020 through 2024.
-
-**Key questions explored:**
-- Which states have the highest and lowest retail electricity prices?
-- How has the U.S. generation mix (coal, gas, solar, wind) shifted over time?
-- Which fuel type dominates generation in each state?
-- Is there a relationship between natural gas prices and retail electricity prices by state?
+This project pulls monthly U.S. electricity data from the U.S. Energy Information Administration (EIA) Open Data API, loads it into a PostgreSQL database, and analyzes it using SQL. The analysis covers electricity generation by state and fuel type, retail electricity prices by state and customer sector, and natural gas prices for the date range 2020 to 2024.
 
 ---
 
@@ -25,10 +19,11 @@ EIA Open Data API
   extract.py          ← paginated API calls with retry logic
        │
        ▼
-  transform.py        ← clean, rename, and map dimension IDs
+  load_dims.py        ← populate dimension tables, build ID lookup maps
+
        │
        ▼
-  load_dims.py        ← populate dimension tables, build ID lookup maps
+  transform.py        ← clean, rename, and map dimension IDs
        │
        ▼
   load_facts.py       ← insert transformed fact rows into PostgreSQL
@@ -84,7 +79,7 @@ All data sourced from the [EIA Open Data API](https://www.eia.gov/opendata/). A 
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/EIA_Analytics.git
+git clone https://github.com/maxwellgriffith345/EIA_Analytics.git
 cd EIA_Analytics
 ```
 
@@ -123,8 +118,8 @@ The pipeline extracts data from the EIA API, transforms it, and loads it into Po
 ```
 EIA_Analytics/
 ├── config.py               # API key (excluded from version control)
-├── pipeline.py             # Orchestrates the full ETL pipeline
-├── extract.py              # EIA API extraction with pagination and retry
+├── pipeline.py             # full ETL pipeline
+├── extract.py              # EIA API extraction
 ├── transform.py            # Data cleaning and dimension ID mapping
 ├── load_dims.py            # Dimension table loading and ID map generation
 ├── schema.sql              # PostgreSQL schema definition
@@ -176,19 +171,19 @@ Queries are organized in three files under `queries/` and presented with results
 
 ---
 
-## Key Engineering Challenges
+## Challenges
 
 **API pagination and server errors**
-The EIA API returns a maximum of 5,000 rows per call. For a five-year date range, the generation dataset contains over 400,000 rows. Naively paginating with a high offset caused intermittent 500 errors from the EIA server. The solution was to chunk requests by state, keeping each request well under the pagination threshold, combined with exponential backoff retry logic for transient server errors.
+The EIA API returns a maximum of 5,000 rows per call. For a five-year date range, the generation dataset contains over 400,000 rows. Using the APIs pagination feature with a high offset caused intermittent 500 errors from the EIA server. The solution was to chunk requests by state combined with retry logic for server errors.
 
 **Star schema loading order**
-Fact tables reference dimension table IDs via foreign keys, but dimension IDs are only assigned by PostgreSQL at insert time (SERIAL). The solution was a two-phase load: first insert all dimension records and then query the dimension tables back into in-memory lookup dictionaries (`{code: id}`), which are then used to map dimension IDs onto fact rows before inserting.
+Fact tables reference dimension table IDs via foreign keys, but dimension IDs are only assigned by PostgreSQL at insert time (SERIAL). The solution was a to load the data in two steps: first insert all dimension records and then query the dimension tables back as dictionaries (`{code: id}`), which are then used to map dimension IDs onto fact rows before inserting.
 
 **State and region normalization**
 State identifiers are not consistent across EIA datasets. The natural gas dataset uses a `duoarea` field with a leading character prefix rather than a standard two-letter state code. Some datasets include regional aggregates (e.g. "Pacific Contiguous") that don't map cleanly to states. These were filtered and normalized during the transform step.
 
 **Sector overlap in generation data**
-The generation dataset includes both granular sectors (e.g. "IPP Non-CHP", "Commercial CHP") and aggregate rollup sectors (e.g. "All Sectors", "Electric Power"). Loading both would cause double-counting in any aggregation. Only the granular sectors were loaded into the fact table, preserving the ability to aggregate correctly in SQL.
+The generation dataset includes both granular sectors (e.g. "IPP Non-CHP", "Commercial CHP") and aggregate sectors (e.g. "All Sectors", "Electric Power"). Loading both would cause double-counting in any aggregation. Only the granular sectors were loaded into the fact table.
 
 ---
 
